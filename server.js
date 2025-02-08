@@ -1,55 +1,38 @@
 const express = require('express');
 const cors = require('cors');
-const youtubedl = require('youtube-dl-exec');
+const { exec } = require('child_process');
 
 const app = express();
 
-// Omogućavamo CORS kako bi frontend sa GitHub Pages mogao pristupiti API-ju
-app.use(cors());
+app.use(cors());  // Omogućava API da radi sa frontendom
 app.use(express.json());
 
-// API endpoint za download videa
-app.post('/download', async (req, res) => {
-  const { url } = req.body;
-  if (!url) {
-    console.error('Greška: URL nije prosleđen.');
-    return res.status(400).json({ error: 'URL nije prosleđen' });
-  }
-
-  console.log(`Primljen zahtev za URL: ${url}`);
-
-  try {
-    const output = await youtubedl(url, {
-      dumpSingleJson: true,
-      noWarnings: true,
-      preferFreeFormats: true
-    });
-
-    let downloadUrl = null;
-    if (output.formats && output.formats.length > 0) {
-      // Odabir formata sa najvećom visinom (po želji, možeš prilagoditi)
-      downloadUrl = output.formats.reduce((best, format) => {
-        if (!best) return format;
-        return ((format.height || 0) > (best.height || 0)) ? format : best;
-      }, null).url;
-    } else {
-      downloadUrl = output.url;
+app.post('/download', (req, res) => {
+    const { url } = req.body;
+    if (!url) {
+        return res.status(400).json({ error: 'Nema unetog URL-a!' });
     }
 
-    console.log(`Vraćam download URL: ${downloadUrl}`);
-    res.json({ download_url: downloadUrl });
-  } catch (error) {
-    console.error('Došlo je do greške:', error);
-    res.status(500).json({ error: error.toString() });
-  }
+    console.log(`Primljen zahtev za preuzimanje: ${url}`);
+
+    // Pokreće yt-dlp i dobija URL fajla za preuzimanje
+    exec(`yt-dlp -f best --get-url "${url}"`, (error, stdout, stderr) => {
+        if (error) {
+            console.error(`Greška: ${stderr}`);
+            return res.status(500).json({ error: 'Greška pri preuzimanju videa!' });
+        }
+
+        const downloadUrl = stdout.trim();
+        console.log(`Download link: ${downloadUrl}`);
+        res.json({ download_url: downloadUrl });
+    });
 });
 
-// Opcioni GET endpoint za proveru rada API-ja (ne koristi se u frontend aplikaciji)
 app.get('/', (req, res) => {
-  res.send('Backend API za Video Downloader radi!');
+    res.send('Backend API za Video Downloader je aktivan!');
 });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Server pokrenut na portu ${PORT}`);
+    console.log(`Server pokrenut na portu ${PORT}`);
 });
