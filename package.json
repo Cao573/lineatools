@@ -1,17 +1,21 @@
 {
   "name": "video-downloader",
   "version": "1.0.0",
-  "description": "Node.js backend za preuzimanje videa",
-  "main": "server.js",
+  "description": "A simple backend for downloading YouTube videos using Node.js with frontend in public folder",
+  "main": "index.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node index.js"
   },
+  "keywords": [
+    "youtube",
+    "downloader",
+    "nodejs"
+  ],
+  "author": "Linea Bytes Ltd.",
+  "license": "MIT",
   "dependencies": {
-    "express": "^4.18.2",
     "cors": "^2.8.5",
-    "child_process": "latest"
-  },
-  "engines": {
-    "node": "18.x"
+    "express": "^4.18.2",
+    "ytdl-core": "^4.11.2"
   }
 }
