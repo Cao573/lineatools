@@ -1,3 +1,5 @@
+// server.js
+
 const express = require('express');
 const cors = require('cors');
 const youtubedl = require('youtube-dl-exec');
@@ -7,6 +9,11 @@ const app = express();
 // Omogućavamo CORS da bi GitHub Pages mogao da pristupi API-ju
 app.use(cors());
 app.use(express.json());
+
+// Opcioni GET route za root URL
+app.get('/', (req, res) => {
+  res.send('Server is running!');
+});
 
 app.post('/download', async (req, res) => {
   const { url } = req.body;
