@@ -24,8 +24,8 @@ app.get('/download', async (req, res) => {
 
         console.log('Fetching video info for:', videoURL);
 
-        // Koristimo yt-dlp za preuzimanje videa
-        const command = `yt-dlp -f best "${videoURL}" -o -`;
+        // Koristimo lokalni yt-dlp binarni fajl
+        const command = `./yt-dlp -f best "${videoURL}" -o -`;
 
         const child = exec(command, (error, stdout, stderr) => {
             if (error) {
