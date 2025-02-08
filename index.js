@@ -24,8 +24,8 @@ app.get('/download', async (req, res) => {
 
         console.log('Fetching video info for:', videoURL);
 
-        // Koristimo lokalni yt-dlp binarni fajl
-        const command = `./yt-dlp -f best "${videoURL}" -o -`;
+        // Komanda za yt-dlp
+        const command = `./yt-dlp -f "bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]" "${videoURL}" -o -`;
 
         const child = exec(command, (error, stdout, stderr) => {
             if (error) {
@@ -34,13 +34,21 @@ app.get('/download', async (req, res) => {
             }
         });
 
+        // Postavi zaglavlja za preuzimanje
         res.setHeader('Content-Disposition', 'attachment; filename="video.mp4"');
         res.setHeader('Content-Type', 'video/mp4');
 
-        child.stdout.pipe(res);
-        child.stderr.on('data', (data) => {
-            console.error('yt-dlp stderr:', data);
+        // Logiraj stdout i stderr
+        child.stdout.on('data', (data) => {
+            console.log('yt-dlp stdout:', data.toString());
         });
+
+        child.stderr.on('data', (data) => {
+            console.error('yt-dlp stderr:', data.toString());
+        });
+
+        // Pošalji video korisniku
+        child.stdout.pipe(res);
     } catch (error) {
         console.error('Error occurred:', error.message);
         res.status(500).json({ error: 'Something went wrong', details: error.message });
