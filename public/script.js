@@ -13,8 +13,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     resultDiv.innerHTML = '<p>Preuzimanje informacija o videu...</p>';
 
-    // Zamenite ispod sa URL-om vašeg Node backend-a na Render-u
-    const backendUrl = 'https://lineatools.onrender.com/';
+    // OBAVEZNO: Proveri da li je URL tačan! 
+    const backendUrl = 'https://lineatools.onrender.com/'; // Zameni sa stvarnim URL-om tvog Render servisa
 
     fetch(backendUrl, {
       method: 'POST',
@@ -23,7 +23,16 @@ document.addEventListener('DOMContentLoaded', function() {
       },
       body: JSON.stringify({ url: videoUrl })
     })
-    .then(response => response.json())
+    .then(async response => {
+      // Proveri da li je odgovor u JSON formatu
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        // Ako nije JSON, pročitaj tekst i baci grešku
+        const text = await response.text();
+        throw new Error("Neočekivan format odgovora: " + text);
+      }
+      return response.json();
+    })
     .then(data => {
       if (data.error) {
         resultDiv.innerHTML = `<p style="color:red;">Greška: ${data.error}</p>`;
@@ -34,8 +43,8 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     })
     .catch(error => {
-      console.error('Error:', error);
-      resultDiv.innerHTML = `<p style="color:red;">Došlo je do greške prilikom preuzimanja informacija.</p>`;
+      console.error('Greška u fetch pozivu:', error);
+      resultDiv.innerHTML = `<p style="color:red;">Došlo je do greške: ${error.message}</p>`;
     });
   });
 });
