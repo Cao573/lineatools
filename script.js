@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function() {
     resultDiv.innerHTML = '<p>Preuzimanje informacija o videu...</p>';
 
     // Zamenite ispod sa URL-om vašeg Node backend-a na Render-u
-    const backendUrl = 'https://your-backend-url.onrender.com/download';
+    const backendUrl = 'https://lineatools.onrender.com/download';
 
     fetch(backendUrl, {
       method: 'POST',
