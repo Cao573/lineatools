@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const ytdl = require('ytdl-core');
+const { exec } = require('child_process');
 const path = require('path');
 
 const app = express();
@@ -16,22 +16,34 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Route za preuzimanje videa
 app.get('/download', async (req, res) => {
     try {
-        const videoURL = req.query.url;
+        const videoURL = decodeURIComponent(req.query.url);
+
         if (!videoURL) {
             return res.status(400).json({ error: 'URL is required' });
         }
 
-        const info = await ytdl.getInfo(videoURL);
-        const videoFormat = ytdl.chooseFormat(info.formats, { quality: 'highest' });
+        console.log('Fetching video info for:', videoURL);
 
-        res.setHeader('Content-Disposition', `attachment; filename="${info.videoDetails.title}.mp4"`);
+        // Koristimo yt-dlp za preuzimanje videa
+        const command = `yt-dlp -f best "${videoURL}" -o -`;
+
+        const child = exec(command, (error, stdout, stderr) => {
+            if (error) {
+                console.error('Error occurred:', error.message);
+                return res.status(500).json({ error: 'Something went wrong', details: error.message });
+            }
+        });
+
+        res.setHeader('Content-Disposition', 'attachment; filename="video.mp4"');
         res.setHeader('Content-Type', 'video/mp4');
 
-        ytdl(videoURL, { format: videoFormat })
-            .pipe(res);
+        child.stdout.pipe(res);
+        child.stderr.on('data', (data) => {
+            console.error('yt-dlp stderr:', data);
+        });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Something went wrong' });
+        console.error('Error occurred:', error.message);
+        res.status(500).json({ error: 'Something went wrong', details: error.message });
     }
 });
 
