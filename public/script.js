@@ -18,24 +18,24 @@ document.getElementById('downloadForm').addEventListener('submit', async functio
             method: 'GET',
         });
 
-        if (response.ok) {
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'video.mp4';
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            message.textContent = 'Download completed!';
-            message.style.color = 'green';
-        } else {
-            message.textContent = 'Error downloading video';
-            message.style.color = 'red';
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'An error occurred while downloading the video');
         }
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'video.mp4';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        message.textContent = 'Download completed!';
+        message.style.color = 'green';
     } catch (error) {
-        console.error(error);
-        message.textContent = 'An error occurred while downloading the video';
+        console.error('Error downloading video:', error.message);
+        message.textContent = error.message;
         message.style.color = 'red';
     }
 });
