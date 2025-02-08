@@ -1,47 +1,41 @@
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('download-form');
-    const videoUrlInput = document.getElementById('video-url');
-    const resultDiv = document.getElementById('result');
+document.getElementById('downloadForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
 
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const videoUrl = videoUrlInput.value.trim();
-        if (!videoUrl) {
-            resultDiv.innerHTML = '<p style="color:red;">Molimo unesite URL videa.</p>';
-            return;
-        }
+    const videoUrl = document.getElementById('videoUrl').value;
+    const message = document.getElementById('message');
 
-        resultDiv.innerHTML = '<p>🔄 Preuzimanje informacija o videu...</p>';
+    if (!videoUrl) {
+        message.textContent = 'Please enter a valid YouTube URL';
+        message.style.color = 'red';
+        return;
+    }
 
-        const backendUrl = 'https://lineatools.onrender.com/download';  // Zameni sa pravim URL-om
+    message.textContent = 'Downloading...';
+    message.style.color = 'blue';
 
-        fetch(backendUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ url: videoUrl })
-        })
-        .then(async response => {
-            const contentType = response.headers.get("content-type");
-            if (!contentType || !contentType.includes("application/json")) {
-                const text = await response.text();
-                throw new Error("Neočekivan odgovor: " + text);
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.error) {
-                resultDiv.innerHTML = `<p style="color:red;">⚠️ Greška: ${data.error}</p>`;
-            } else if (data.download_url) {
-                resultDiv.innerHTML = `<a href="${data.download_url}" target="_blank" download>📥 Kliknite ovde da preuzmete video</a>`;
-            } else {
-                resultDiv.innerHTML = `<p>🚫 Nema dostupnog preuzimanja.</p>`;
-            }
-        })
-        .catch(error => {
-            console.error('Greška:', error);
-            resultDiv.innerHTML = `<p style="color:red;">⚠️ Greška: ${error.message}</p>`;
+    try {
+        const response = await fetch(`/download?url=${encodeURIComponent(videoUrl)}`, {
+            method: 'GET',
         });
-    });
+
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'video.mp4';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            message.textContent = 'Download completed!';
+            message.style.color = 'green';
+        } else {
+            message.textContent = 'Error downloading video';
+            message.style.color = 'red';
+        }
+    } catch (error) {
+        console.error(error);
+        message.textContent = 'An error occurred while downloading the video';
+        message.style.color = 'red';
+    }
 });
