@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         resultDiv.innerHTML = '<p>🔄 Preuzimanje informacija o videu...</p>';
 
-        const backendUrl = 'https://lineatools.onrender.com//download';  // Zameni sa pravim URL-om
+        const backendUrl = 'https://lineatools.onrender.com/download';  // Zameni sa pravim URL-om
 
         fetch(backendUrl, {
             method: 'POST',
