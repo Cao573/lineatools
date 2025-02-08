@@ -29,7 +29,7 @@ app.post('/download', (req, res) => {
 });
 
 app.get('/', (req, res) => {
-    res.send('Backend API za Video Downloader je aktivan!');
+    res.sendFile(__dirname + '/public/index.html');
 });
 
 const PORT = process.env.PORT || 3000;
