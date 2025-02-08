@@ -1,20 +1,18 @@
-// server.js
-
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 const youtubedl = require('youtube-dl-exec');
 
 const app = express();
 
-// Omogućavamo CORS da bi GitHub Pages mogao da pristupi API-ju
+// Omogućavanje CORS-a i parsiranje JSON tela zahteva
 app.use(cors());
 app.use(express.json());
 
-// Opcioni GET route za root URL
-app.get('/', (req, res) => {
-  res.send('Server is running!');
-});
+// Serviranje statičnih fajlova iz foldera "public"
+app.use(express.static(path.join(__dirname, 'public')));
 
+// Endpoint za download videa
 app.post('/download', async (req, res) => {
   const { url } = req.body;
   if (!url) {
@@ -22,7 +20,7 @@ app.post('/download', async (req, res) => {
   }
 
   try {
-    // Pozivamo youtube-dl-exec kako bismo izvukli informacije o videu u JSON formatu
+    // Pozivamo youtube-dl-exec da bismo izvukli informacije o videu
     const output = await youtubedl(url, {
       dumpSingleJson: true,
       noWarnings: true,
@@ -44,6 +42,12 @@ app.post('/download', async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.toString() });
   }
+});
+
+// Opcioni fallback route da bi se uvek učitala index.html stranica
+// (ovo je korisno ako koristiš HTML5 routing na frontend-u)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 const PORT = process.env.PORT || 3000;
