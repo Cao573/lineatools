@@ -1,12 +1,22 @@
 const express = require('express');
 const cors = require('cors');
 const { exec } = require('child_process');
+const path = require('path');
 
 const app = express();
 
-app.use(cors());  // Omogućava API da radi sa frontendom
-app.use(express.json());
+// Omogućavanje CORS-a
+app.use(cors());
 
+// Postavljanje statičkog foldera
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Služenje index.html kada neko dođe na /
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// API ruta za preuzimanje videa
 app.post('/download', (req, res) => {
     const { url } = req.body;
     if (!url) {
@@ -15,7 +25,6 @@ app.post('/download', (req, res) => {
 
     console.log(`Primljen zahtev za preuzimanje: ${url}`);
 
-    // Pokreće yt-dlp i dobija URL fajla za preuzimanje
     exec(`yt-dlp -f best --get-url "${url}"`, (error, stdout, stderr) => {
         if (error) {
             console.error(`Greška: ${stderr}`);
@@ -28,10 +37,7 @@ app.post('/download', (req, res) => {
     });
 });
 
-app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/public/index.html');
-});
-
+// Pokretanje servera
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server pokrenut na portu ${PORT}`);
