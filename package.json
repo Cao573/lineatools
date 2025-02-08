@@ -12,7 +12,7 @@
     "nodejs",
     "yt-dlp"
   ],
-  "author": "Linea Bytes Ltd.",
+  "author": "Linea Bytes Ltd",
   "license": "MIT",
   "dependencies": {
     "cors": "^2.8.5",
