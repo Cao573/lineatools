@@ -10,6 +10,9 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
+// Serve static files from the "public" folder
+app.use(express.static(path.join(__dirname, 'public')));
+
 // Route za preuzimanje videa
 app.get('/download', async (req, res) => {
     try {
