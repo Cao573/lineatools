@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
-const { exec } = require('child_process');
+const ytdl = require('ytdl-core');
+const ffmpeg = require('fluent-ffmpeg');
 const path = require('path');
 
 const app = express();
@@ -24,31 +25,26 @@ app.get('/download', async (req, res) => {
 
         console.log('Fetching video info for:', videoURL);
 
-        // Komanda za yt-dlp
-        const command = `./yt-dlp -f "bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]" "${videoURL}" -o -`;
-
-        const child = exec(command, (error, stdout, stderr) => {
-            if (error) {
-                console.error('Error occurred:', error.message);
-                return res.status(500).json({ error: 'Something went wrong', details: error.message });
-            }
-        });
+        // Dohvati informacije o videu
+        const info = await ytdl.getInfo(videoURL);
+        const videoFormat = ytdl.chooseFormat(info.formats, { quality: 'highest' });
 
         // Postavi zaglavlja za preuzimanje
-        res.setHeader('Content-Disposition', 'attachment; filename="video.mp4"');
+        res.setHeader('Content-Disposition', `attachment; filename="${info.videoDetails.title}.mp4"`);
         res.setHeader('Content-Type', 'video/mp4');
 
-        // Logiraj stdout i stderr
-        child.stdout.on('data', (data) => {
-            console.log('yt-dlp stdout:', data.toString());
-        });
-
-        child.stderr.on('data', (data) => {
-            console.error('yt-dlp stderr:', data.toString());
-        });
-
-        // Pošalji video korisniku
-        child.stdout.pipe(res);
+        // Koristimo fluent-ffmpeg za obradu videa
+        ffmpeg()
+            .input(ytdl(videoURL, { format: videoFormat }))
+            .format('mp4')
+            .on('error', (err) => {
+                console.error('Error processing video:', err.message);
+                res.status(500).json({ error: 'Something went wrong', details: err.message });
+            })
+            .on('end', () => {
+                console.log('Video processing completed.');
+            })
+            .pipe(res, { end: true });
     } catch (error) {
         console.error('Error occurred:', error.message);
         res.status(500).json({ error: 'Something went wrong', details: error.message });
