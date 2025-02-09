@@ -1,40 +1,34 @@
-document.getElementById('downloadForm').addEventListener('submit', async function (e) {
+document.getElementById('uploadForm').addEventListener('submit', async function (e) {
     e.preventDefault();
 
-    const videoUrl = document.getElementById('videoUrl').value;
     const message = document.getElementById('message');
+    const resultImage = document.getElementById('resultImage');
 
-    if (!videoUrl) {
-        message.textContent = 'Please enter a valid YouTube URL';
-        message.style.color = 'red';
-        return;
-    }
+    const formData = new FormData();
+    const fileInput = document.getElementById('imageUpload');
+    formData.append('image', fileInput.files[0]);
 
-    message.textContent = 'Downloading...';
+    message.textContent = 'Processing...';
     message.style.color = 'blue';
 
     try {
-        const response = await fetch(`/download?url=${encodeURIComponent(videoUrl)}`, {
-            method: 'GET',
+        const response = await fetch('/remove-background', {
+            method: 'POST',
+            body: formData,
         });
 
         if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || 'An error occurred while downloading the video');
+            throw new Error('An error occurred while processing the image');
         }
 
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'video.mp4';
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        message.textContent = 'Download completed!';
+        resultImage.src = url;
+        resultImage.style.display = 'block';
+        message.textContent = 'Background removed successfully!';
         message.style.color = 'green';
     } catch (error) {
-        console.error('Error downloading video:', error.message);
+        console.error('Error removing background:', error.message);
         message.textContent = error.message;
         message.style.color = 'red';
     }
