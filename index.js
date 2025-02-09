@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
-const sharp = require('sharp');
+const { removeBackgroundFromImageFile } = require('rembg');
 const path = require('path');
 const fs = require('fs');
 
@@ -24,11 +24,13 @@ app.post('/remove-background', upload.single('image'), async (req, res) => {
         const filePath = req.file.path;
         const outputPath = path.join(__dirname, 'public', 'output.png');
 
-        // Učitaj sliku pomoću Sharp
-        await sharp(filePath)
-            .ensureAlpha() // Dodaj alfa kanal (transparentnost)
-            .toFormat('png')
-            .toFile(outputPath);
+        // Ukloni pozadinu pomoću rembg
+        const outputBuffer = await removeBackgroundFromImageFile({
+            path: filePath,
+        });
+
+        // Spremi rezultat kao PNG sliku
+        fs.writeFileSync(outputPath, outputBuffer);
 
         // Pošalji obrisanu sliku korisniku
         res.sendFile(outputPath, (err) => {
