@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
-const cv = require('opencv4nodejs');
+const sharp = require('sharp');
 const path = require('path');
 const fs = require('fs');
 
@@ -24,27 +24,11 @@ app.post('/remove-background', upload.single('image'), async (req, res) => {
         const filePath = req.file.path;
         const outputPath = path.join(__dirname, 'public', 'output.png');
 
-        // Učitaj sliku pomoću OpenCV
-        const image = await cv.imreadAsync(filePath);
-
-        // Pretvori sliku u HSV format za bolju detekciju boja
-        const hsvImage = await image.cvtColorAsync(cv.COLOR_BGR2HSV);
-
-        // Definiraj raspon boja za pozadinu (npr., bijela pozadina)
-        const lowerBound = new cv.Vec(0, 0, 200); // Donja granica boje
-        const upperBound = new cv.Vec(180, 30, 255); // Gornja granica boje
-
-        // Stvori masku za detekciju pozadine
-        const mask = await hsvImage.inRangeAsync(lowerBound, upperBound);
-
-        // Invertiraj masku da se zadrže predmeti na slici
-        const invertedMask = await mask.bitwiseNotAsync();
-
-        // Primijeni masku na originalnu sliku
-        const result = await image.copyToWithMaskAsync(invertedMask);
-
-        // Spremi rezultat
-        await cv.imwriteAsync(outputPath, result);
+        // Učitaj sliku pomoću Sharp
+        await sharp(filePath)
+            .ensureAlpha() // Dodaj alfa kanal (transparentnost)
+            .toFormat('png')
+            .toFile(outputPath);
 
         // Pošalji obrisanu sliku korisniku
         res.sendFile(outputPath, (err) => {
