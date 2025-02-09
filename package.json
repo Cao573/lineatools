@@ -1,24 +1,23 @@
 {
-  "name": "video-downloader",
+  "name": "remove-background",
   "version": "1.0.0",
-  "description": "A simple backend for downloading YouTube videos using Node.js with fluent-ffmpeg and ytdl-core",
+  "description": "A simple app to remove background from images using OpenCV",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
   "keywords": [
-    "youtube",
-    "downloader",
-    "nodejs",
-    "fluent-ffmpeg",
-    "ytdl-core"
+    "remove",
+    "background",
+    "opencv",
+    "nodejs"
   ],
   "author": "Linea Bytes Ltd",
   "license": "MIT",
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.18.2",
-    "fluent-ffmpeg": "^2.1.2",
-    "ytdl-core": "^4.11.2"
+    "multer": "^1.4.5-lts.1",
+    "opencv4nodejs": "^6.0.0"
   }
 }
