@@ -1,22 +1,24 @@
 {
   "name": "video-downloader",
   "version": "1.0.0",
-  "description": "A simple backend for downloading YouTube videos using Node.js with yt-dlp",
+  "description": "A simple backend for downloading YouTube videos using Node.js with fluent-ffmpeg and ytdl-core",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "postinstall": "curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o ./yt-dlp && chmod +x ./yt-dlp"
+    "start": "node index.js"
   },
   "keywords": [
     "youtube",
     "downloader",
     "nodejs",
-    "yt-dlp"
+    "fluent-ffmpeg",
+    "ytdl-core"
   ],
   "author": "Linea Bytes Ltd",
   "license": "MIT",
   "dependencies": {
     "cors": "^2.8.5",
-    "express": "^4.18.2"
+    "express": "^4.18.2",
+    "fluent-ffmpeg": "^2.1.2",
+    "ytdl-core": "^4.11.2"
   }
 }
