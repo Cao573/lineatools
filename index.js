@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
-const { removeBackgroundFromImageFile } = require('rembg');
+const { exec } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 
@@ -24,24 +24,26 @@ app.post('/remove-background', upload.single('image'), async (req, res) => {
         const filePath = req.file.path;
         const outputPath = path.join(__dirname, 'public', 'output.png');
 
-        // Ukloni pozadinu pomoću rembg
-        const outputBuffer = await removeBackgroundFromImageFile({
-            path: filePath,
-        });
+        // Pozovi rembg CLI za uklanjanje pozadine
+        const command = `rembg i ${filePath} ${outputPath}`;
 
-        // Spremi rezultat kao PNG sliku
-        fs.writeFileSync(outputPath, outputBuffer);
-
-        // Pošalji obrisanu sliku korisniku
-        res.sendFile(outputPath, (err) => {
-            if (err) {
-                console.error('Error sending file:', err.message);
-                res.status(500).json({ error: 'Something went wrong' });
+        exec(command, (error, stdout, stderr) => {
+            if (error) {
+                console.error('Error occurred:', error.message);
+                return res.status(500).json({ error: 'Something went wrong', details: error.message });
             }
 
-            // Izbriši privremene datoteke
-            fs.unlinkSync(filePath);
-            fs.unlinkSync(outputPath);
+            // Pošalji obrisanu sliku korisniku
+            res.sendFile(outputPath, (err) => {
+                if (err) {
+                    console.error('Error sending file:', err.message);
+                    res.status(500).json({ error: 'Something went wrong' });
+                }
+
+                // Izbriši privremene datoteke
+                fs.unlinkSync(filePath);
+                fs.unlinkSync(outputPath);
+            });
         });
     } catch (error) {
         console.error('Error occurred:', error.message);
