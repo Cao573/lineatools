@@ -16,12 +16,8 @@ body {
     text-align: center;
 }
 
-input[type="text"] {
-    width: 80%;
-    padding: 10px;
+input[type="file"] {
     margin-bottom: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
 }
 
 button {
